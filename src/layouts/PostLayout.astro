@@ -1,0 +1,119 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+interface Source {
+  title: string;
+  url: string;
+  note?: string;
+}
+
+interface CarouselSlide {
+  src: string;
+  alt: string;
+  caption?: string;
+  threads_text?: string;
+}
+
+interface Props {
+  frontmatter: {
+    title: string;
+    date: Date;
+    summary: string;
+    categories: string[];
+    tags: string[];
+    sources?: Source[];
+    carousel?: CarouselSlide[];
+    description?: string;
+    repo?: string;
+    threads_thread?: string;
+    phase?: 'A' | 'B';
+  };
+  slug: string;
+}
+
+const { frontmatter } = Astro.props;
+const { title, date, summary, categories, sources, carousel, description, repo, threads_thread, phase } = frontmatter;
+const baseUrl = import.meta.env.BASE_URL.replace(/\/+$/, '');
+function resolveSrc(src: string): string {
+  if (/^https?:\/\//.test(src)) return src;
+  return `${baseUrl}${src.startsWith('/') ? src : `/${src}`}`;
+}
+
+const dateStr = date.toISOString().slice(0, 10);
+const dateDisplay = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+
+function categoryHref(c: string): string {
+  return `${import.meta.env.BASE_URL}categories/${encodeURIComponent(c)}/`.replace(/\/+/g, '/');
+}
+---
+
+<BaseLayout title={title} description={description ?? summary}>
+  <article class="container">
+    <header class="article-header">
+      {categories.length > 0 && (
+        <div class="article-categories">
+          {categories.map((c) => (
+            <a class="chip" href={categoryHref(c)}>{c}</a>
+          ))}
+        </div>
+      )}
+      <h1 class="article-title">{title}</h1>
+      <p class="article-meta">
+        <time datetime={dateStr}>{dateDisplay}</time>
+        {phase && <span class="phase-pill" data-phase={phase}>phase {phase}</span>}
+      </p>
+      <p class="article-summary">{summary}</p>
+      <aside class="disclaimer-banner" role="note">
+        <p class="byline">作者：<strong>康瑋麟（WLK）</strong>｜非資工背景的醫學生 vibe-coder</p>
+        <p class="byline-disclaimer">本文為個人 LLM workflow / vibe-coding 觀察筆記，不是 best practice、不是 tutorial、不保證在你的環境跑得起來。所有 pattern 都歡迎被打臉 — 留言 / Threads 都行。</p>
+      </aside>
+      {(repo || threads_thread) && (
+        <p class="article-meta-links">
+          {repo && <a href={repo} target="_blank" rel="noopener">源碼 repo →</a>}
+          {repo && threads_thread && ' · '}
+          {threads_thread && <a href={threads_thread} target="_blank" rel="noopener">Threads 串文 →</a>}
+        </p>
+      )}
+    </header>
+
+    {carousel && carousel.length > 0 && (
+      <section class="article-carousel" aria-label="圖片懶人包">
+        <div class="article-carousel__track">
+          {carousel.map((slide, i) => (
+            <figure class="article-carousel__slide">
+              <img
+                src={resolveSrc(slide.src)}
+                alt={slide.alt}
+                loading={i === 0 ? 'eager' : 'lazy'}
+                width="1080"
+                height="1080"
+              />
+              {slide.caption && (
+                <figcaption class="article-carousel__caption">{slide.caption}</figcaption>
+              )}
+            </figure>
+          ))}
+        </div>
+        <p class="article-carousel__hint">← 滑動瀏覽 {carousel.length} 張懶人包 →</p>
+      </section>
+    )}
+
+    <div class="article-body">
+      <slot />
+    </div>
+
+    {sources && sources.length > 0 && (
+      <section class="article-sources">
+        <h3>參考資料 / 連結</h3>
+        <ol>
+          {sources.map((s) => (
+            <li>
+              <a href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a>
+              {s.note && <span class="article-sources__note">{s.note}</span>}
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
+  </article>
+</BaseLayout>
