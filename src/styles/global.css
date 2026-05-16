@@ -159,12 +159,42 @@ blockquote {
 ul, ol { padding-left: 1.4em; margin: 0 0 1.2em; }
 li { margin-bottom: 0.4em; }
 
+/* Inline code (not inside <pre>) */
 code {
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   background: var(--color-surface-muted);
   padding: 1px 6px;
   border-radius: var(--radius-sm);
   font-size: 0.9em;
+}
+
+/* Shiki fenced code block — override the inline dark theme background
+   that Shiki injects, use site-consistent cream surface-muted instead.
+   !important needed because Shiki's `style=` attribute beats class rules. */
+pre.astro-code {
+  background-color: var(--color-surface-muted) !important;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  line-height: 1.55;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  margin: var(--space-5) 0;
+}
+
+/* Inner <code> inside <pre> shouldn't get inline-code background */
+pre.astro-code code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Shiki line spans — let token colors inherit from inline style which is
+   light-theme palette now (after astro.config shikiConfig.theme switch) */
+pre.astro-code .line {
+  display: block;
+  min-height: 1em;
 }
 
 hr {

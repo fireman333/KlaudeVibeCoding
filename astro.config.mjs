@@ -7,4 +7,13 @@ export default defineConfig({
   trailingSlash: 'always',
   build: { format: 'directory' },
   integrations: [sitemap()],
+  markdown: {
+    // Default Shiki theme is github-dark — too jarring against the cream
+    // site bg. Use github-light (matches our warm-cream palette) and
+    // override .astro-code background in global.css to surface-muted.
+    shikiConfig: {
+      theme: 'github-light',
+      wrap: true,
+    },
+  },
 });
